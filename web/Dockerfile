@@ -1,24 +1,17 @@
+# Build
 FROM node:20-alpine AS build
 WORKDIR /app
-# deps de build
-COPY package.json package-lock.json* ./
-RUN npm ci || npm i
-RUN npm i -D tailwindcss postcss autoprefixer tailwindcss-animate
-# código
+COPY package*.json ./
+RUN npm ci
 COPY . .
-# build do Vite
+# força hash único a cada build (cache-bust)
+RUN node -e "require('fs').writeFileSync('src/force-rebuild-stamp.js', `export default \"build-${Date.now()}\"`)"
 RUN npm run build
 
-# --- runtime fino com deps de produção (express) ---
-FROM node:20-alpine AS run
+# Runtime
+FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-# trazer dist e server
+RUN npm i -g serve
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/server.cjs ./server.cjs
-# trazer package.json e instalar SOMENTE prod deps (inclui express)
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/package-lock.json ./package-lock.json
-RUN npm ci --omit=dev || npm i --omit=dev
 EXPOSE 3002
-CMD ["node","server.cjs"]
+CMD ["serve", "-s", "dist", "-l", "3002"]
