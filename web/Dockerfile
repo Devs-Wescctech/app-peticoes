@@ -4,8 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-# força hash único a cada build (cache-bust)
-RUN node -e "require('fs').writeFileSync('src/force-rebuild-stamp.js', `export default \"build-${Date.now()}\"`)"
+# força hash único a cada build (cache-bust) — cria a pasta se não existir
+RUN node -e "require('fs').mkdirSync('src',{recursive:true}); require('fs').writeFileSync('src/force-rebuild-stamp.js', `export default \\\"build-${Date.now()}\\\"\\n`)"
 RUN npm run build
 
 # Runtime
