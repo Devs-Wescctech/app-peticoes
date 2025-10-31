@@ -1,0 +1,36 @@
+services:
+  api:
+    build: ./api
+    environment:
+      - PORT=4000
+      - PGHOST=host.docker.internal
+      - PGPORT=5432
+      - PGDATABASE=peticoes_db
+      - PGUSER=peticoes_user
+      - PGPASSWORD=SENHA_FORTE_AQUI
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:4000:4000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:4000/health >/dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:3002:3002"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSI http://127.0.0.1:3002/peticoes/ >/dev/null"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped

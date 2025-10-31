@@ -1,0 +1,19 @@
+# Node / Vite
+web/node_modules/
+web/dist/
+
+# Python
+api/.venv/
+api/__pycache__/
+**/__pycache__/
+
+# Ambiente/segredos
+.env
+*.env
+uploads/
+
+# SO/Editor
+.DS_Store
+*.log
+.vscode/
+.idea/
